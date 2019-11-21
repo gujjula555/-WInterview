@@ -2,6 +2,7 @@ package com.example.wiprointerview.ui.fragments
 
 import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -18,72 +19,71 @@ import com.example.wiprointerview.network.Result
 import com.example.wiprointerview.viewmodel.MainViewModel
 import com.google.android.material.snackbar.Snackbar
 
-class MainFragment : Fragment(),SwipeRefreshLayout.OnRefreshListener {
+class MainFragment : Fragment(), SwipeRefreshLayout.OnRefreshListener {
 
     companion object {
         fun newInstance() = MainFragment()
     }
-    private lateinit var mainViewModel: MainViewModel;
-    private lateinit var mainFragmentBinding: MainFragmentBinding;
-    private var listData: List<Item> = ArrayList<Item>()
+
+    private lateinit var mMainViewModel: MainViewModel
+    private lateinit var mMainFragmentBinding: MainFragmentBinding
+    private var mListItemsData: List<Item> = ArrayList()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        mainFragmentBinding = DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false)
-        mainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
-        return mainFragmentBinding.getRoot()
-
+        mMainFragmentBinding =
+            DataBindingUtil.inflate(inflater, R.layout.main_fragment, container, false)
+        mMainViewModel = ViewModelProviders.of(this).get(MainViewModel::class.java)
+        return mMainFragmentBinding.getRoot()
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        mainFragmentBinding.refresh.setOnRefreshListener(this)
+        mMainFragmentBinding.refresh.setOnRefreshListener(this)
 
-        var adapter = ItemAdapter(listData)
-        mainFragmentBinding.recyclerView.adapter = adapter
-        mainFragmentBinding.progressCircular.visibility = View.VISIBLE;
-        mainViewModel.data.observe(this, Observer {
-            when (it.status) {
+        val adapter = ItemAdapter(mListItemsData)
+        mMainFragmentBinding.recyclerView.adapter = adapter
+        mMainFragmentBinding.progressCircular.visibility = View.VISIBLE
+        mMainViewModel.mItemListData.observe(this, Observer {
+             when (it.status) {
                 Result.Status.SUCCESS -> {
-                    mainFragmentBinding.recyclerView.visibility = View.VISIBLE
-                    mainFragmentBinding.progressCircular.visibility = View.GONE;
-                    adapter.list = it.data?.rows!!
+                    mMainFragmentBinding.recyclerView.visibility = View.VISIBLE
+                    mMainFragmentBinding.progressCircular.visibility = View.GONE
+                   if(it.data !=null) {
+                       adapter.list = it.data?.rows!!
+                   }
+
                 }
                 Result.Status.ERROR -> {
-                    mainFragmentBinding.recyclerView.visibility = View.GONE
-                    mainFragmentBinding.progressCircular.visibility = View.GONE;
-                    it.message?.let { it1 -> showSnackbar(it1) }
+                    mMainFragmentBinding.recyclerView.visibility = View.GONE
+                    mMainFragmentBinding.progressCircular.visibility = View.GONE
+                    it.message?.let { it1 -> showSnackBar(it1) }
                 }
                 Result.Status.LOADING -> {
-                    mainFragmentBinding.recyclerView.visibility = View.GONE
-                    mainFragmentBinding.progressCircular.visibility = View.VISIBLE;
+                    mMainFragmentBinding.recyclerView.visibility = View.GONE
+                    mMainFragmentBinding.progressCircular.visibility = View.VISIBLE
                 }
-
-
             }
-
-
         })
-
     }
 
-    fun showSnackbar(msg: String) {
+    private fun showSnackBar(msg: String) {
         Snackbar.make(
-            mainFragmentBinding.root,
+            mMainFragmentBinding.root,
             msg,
             Snackbar.LENGTH_SHORT
         ).show()
     }
 
     override fun onDestroy() {
-        mainViewModel.jobCancel()
+        mMainViewModel.jobCancel()
         super.onDestroy()
     }
 
     override fun onRefresh() {
-        mainViewModel.callApi()
-        mainFragmentBinding.refresh.isRefreshing = false
+        mMainViewModel.callApi()
+        mMainFragmentBinding.refresh.isRefreshing = false
     }
-
 }

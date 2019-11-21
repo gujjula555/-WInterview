@@ -1,4 +1,4 @@
-package com.example.wiprointerview.ui.activites
+package com.example.wiprointerview.ui.activity
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -10,9 +10,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        if(savedInstanceState == null)
-        supportFragmentManager.beginTransaction()
-            .add(R.id.container,MainFragment.newInstance()).commitAllowingStateLoss()
+        if (savedInstanceState == null)
+            supportFragmentManager.beginTransaction()
+                .add(R.id.container, MainFragment.newInstance()).commitAllowingStateLoss()
     }
-
 }
