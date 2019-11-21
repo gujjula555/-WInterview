@@ -1,6 +1,7 @@
 package com.example.wiprointerview.application
 
 import android.app.Application
+import androidx.multidex.MultiDex
 import com.example.wiprointerview.dependencyinjection.DaggerDataComponent
 import com.example.wiprointerview.dependencyinjection.DataComponent
 import com.example.wiprointerview.network.DataModule
@@ -17,7 +18,7 @@ class AppApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
+        MultiDex.install(this)
         app = this
         initDataComponent()
         dataComponent.inject(this)

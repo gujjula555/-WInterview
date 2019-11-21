@@ -1,6 +1,7 @@
 package com.example.wiprointerview.network
 
 import android.app.Application
+import android.content.Context
 import com.example.wiprointerview.repository.MainRepository
 import com.example.wiprointerview.util.NetworkUtils
 import dagger.Module
@@ -9,17 +10,21 @@ import okhttp3.Cache
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
-class DataModule(application: Application) {
+open class DataModule(var application: Application) {
 
     companion object {
         const val BASE_URL = "https://dl.dropboxusercontent.com/"
     }
+    @Provides
+    @Singleton
+    fun giveContext(): Context = this.application
 
     private val cacheSize = (5 * 1024 * 1024).toLong()
-    private val myCache = Cache(application.cacheDir, cacheSize)
+    private val myCache = Cache(giveContext().cacheDir, cacheSize)
     private val okHttpClient = OkHttpClient.Builder()
         .cache(myCache)
         .addInterceptor {chain->
@@ -34,13 +39,13 @@ class DataModule(application: Application) {
 
     @Provides
     @Singleton
-    fun provideHttpClient(): OkHttpClient {
+    open fun provideHttpClient(): OkHttpClient {
         return okHttpClient
     }
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    open fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create())
             .baseUrl(BASE_URL)
@@ -50,13 +55,19 @@ class DataModule(application: Application) {
 
     @Singleton
     @Provides
-    fun provideItemService(retrofit: Retrofit): ApiRequest {
+    open fun provideItemService(retrofit: Retrofit): ApiRequest {
         return retrofit.create(ApiRequest::class.java)
     }
+    @Provides
+    @Named("test")
+    open fun giveAppAPIs(): ApiRequest =
+        Retrofit.Builder().build().create(ApiRequest::class.java)
 
     @Singleton
     @Provides
-    fun provideRepository(apiRequest: ApiRequest): MainRepository {
+    open fun provideRepository(apiRequest: ApiRequest): MainRepository {
         return MainRepository(apiRequest)
     }
+
+
 }
